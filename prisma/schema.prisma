@@ -42,6 +42,11 @@ model User {
   name       String?
   password   String
   role_id    String    // Foreign key for Role
+  phone      String?
+  address    String?
+  photo      String?
+  status     Int      @default(0)
+
   role       Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
