@@ -10,28 +10,30 @@ datasource db {
 model Role {
   id          String         @id @default(uuid())
   name        String         @unique
+  code        String?        @unique
   description String?
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
-  users       User[]         // Relationship to User model
-  permissions RolePermission[]
+  users       User[]         @relation("UserRole")  // Relationship to User model
+  permissions RolePermission[]  @relation("RolePermissions")  // Relationship to RolePermission model
 }
 
 model Permission {
   id          String         @id @default(uuid())
   name        String         @unique
+  code        String?        @unique
   description String?
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
-  roles       RolePermission[]
+  roles       RolePermission[]  @relation("RolePermissions")  // Relationship to RolePermission model
 }
 
 model RolePermission {
   id            String      @id @default(uuid())
   role_id       String
   permission_id String
-  role          Role        @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  permission    Permission  @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  role          Role        @relation(fields: [role_id], references: [id], onDelete: Cascade, name: "RolePermissions") // Relation to Role
+  permission    Permission  @relation(fields: [permission_id], references: [id], onDelete: Cascade, name: "RolePermissions") // Relation to Permission
 
   @@unique([role_id, permission_id]) // Ensure a role cannot have the same permission multiple times
 }
@@ -41,13 +43,168 @@ model User {
   email      String    @unique
   name       String?
   password   String
-  role_id    String    // Foreign key for Role
+  role_id    String
   phone      String?
   address    String?
   photo      String?
-  status     Int      @default(0)
+  status     Int       @default(0)
 
-  role       Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  event_daily_reports  EventDailyReport[]  @relation("UserEventDailyReport")  // Relation to EventDailyReport
+  event_activities     EventActivity[]     @relation("UserEventActivity")  // Relation to EventActivity
+  event_finances       EventFinance[]      @relation("UserEventFinance")  // Relation to EventFinance
+  event_documents      EventDocument[]     @relation("UserEventDocument")  // Relation to EventFinance
+  finance_action       EventFinance[]      @relation("ActionUserEventFinance")
+
+  role       Role      @relation(fields: [role_id], references: [id], onDelete: Cascade, name: "UserRole") // Relation to Role
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+}
+
+model Client {
+  id                String    @id @default(uuid())
+  name              String    @unique
+  representative    String
+  email             String
+  phone             String
+  address           String
+  description       String    @db.Text
+
+  events            Event[]   @relation("ClientEvent")  // Relation to Event model
+
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+}
+
+model Event {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  name          String    @unique
+  category      String
+  start_date    DateTime
+  end_date      DateTime
+  status        Int       @default(0)
+  client_id     String
+  description   String    @db.Text
+
+  client        Client     @relation(fields: [client_id], references: [id], onDelete: Cascade, name: "ClientEvent")  // Relation to Client
+  documents     EventDocument[]   @relation("EventEventDocument")  // Relation to EventDocument
+  activities    EventActivity[]   @relation("EventEventActivity")  // Relation to EventActivity
+  finances      EventFinance[]    @relation("EventEventFinance")  // Relation to EventFinance
+  reports       EventDailyReport[]  @relation("EventEventDailyReport")  // Relation to EventDailyReport
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model EventDocument {
+  id                    String    @id @default(uuid())
+  event_id              String
+  file_type             String?
+  file_size             String?
+  file_name             String?
+  document_type         String
+  path                  String
+  user_id               String
+
+  event                 Event     @relation(fields: [event_id], references: [id], onDelete: Cascade, name: "EventEventDocument") // Relation to Event
+  user                  User      @relation(fields: [user_id], references: [id], onDelete: Cascade, name: "UserEventDocument") // Relation to User
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model EventActivity {
+  id                    String    @id @default(uuid())
+  event_id              String
+  activity              String    @db.Text
+  budget                Decimal   @db.Decimal(65, 2)
+  plan_start_date       DateTime
+  plan_end_date         DateTime
+  actual_start_date     DateTime
+  actual_end_date       DateTime
+  status                Int       @default(0)
+  user_id               String?
+
+  event                 Event     @relation(fields: [event_id], references: [id], onDelete: Cascade, name: "EventEventActivity") // Relation to Event
+  user                  User?      @relation(fields: [user_id], references: [id], onDelete: Cascade, name: "UserEventActivity")  // Relation to User
+
+  reports               EventDailyReport[]  @relation("EventActivityEventDailyReport") // Relation to EventDailyReport
+  finances              EventFinance[]      @relation("EventActivityEventFinance")  // Relation to EventFinance
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model BankAccount {
+  id                    String    @id @default(uuid())
+  bank                  String
+  bank_number           BigInt
+  bank_account          String
+
+  sender_finances       EventFinance[]  @relation("SenderBankEventFinance")  // Relation to EventFinance as sender bank
+  receiver_finances     EventFinance[]  @relation("DestinationBankEventFinance") // Relation to EventFinance as destination bank
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model EventFinance {
+  id                    String    @id @default(uuid())
+  event_id              String
+  event_activity_id     String?
+  is_activity           Boolean
+  transaction_code      String
+  category              String
+  title                 String
+  amount                Decimal   @db.Decimal(65, 2)
+  destination_bank_id   String
+  sender_bank_id        String?
+  payment_due_date      DateTime
+  transaction_date      DateTime
+  note                  String?
+  status                String
+  user_id               String
+  action_by             String?
+
+  event                 Event           @relation(fields: [event_id], references: [id], onDelete: Cascade, name: "EventEventFinance")  // Relation to Event
+  event_activity        EventActivity?   @relation(fields: [event_activity_id], references: [id], onDelete: Cascade, name: "EventActivityEventFinance")  // Relation to EventActivity
+  user                  User            @relation(fields: [user_id], references: [id], onDelete: Cascade, name: "UserEventFinance")  // Relation to User
+  action                User?            @relation(fields: [action_by], references: [id], onDelete: Cascade, name: "ActionUserEventFinance")  // Relation to User
+  sender_bank           BankAccount?     @relation(fields: [sender_bank_id], references: [id], onDelete: Cascade, name: "SenderBankEventFinance") // Relation to BankAccount as sender
+  destination_bank      BankAccount     @relation(fields: [destination_bank_id], references: [id], onDelete: Cascade, name: "DestinationBankEventFinance") // Relation to BankAccount as receiver
+
+  documents             EventFinanceDocument[]  @relation("EventFinanceEventFinanceDocument")  // Relation to EventFinanceDocument
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model EventFinanceDocument {
+  id                    String    @id @default(uuid())
+  event_finance_id      String
+  file_type             String?
+  file_size             String?
+  file_name             String?
+  document_type         String
+  path                  String
+
+  event_finance         EventFinance     @relation(fields: [event_finance_id], references: [id], onDelete: Cascade, name: "EventFinanceEventFinanceDocument") // Relation to EventFinance
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+}
+
+model EventDailyReport {
+  id                    String    @id @default(uuid())
+  event_id              String
+  event_activity_id     String?
+  is_activity           Boolean
+  title                 String    @db.Text
+  activity_date         DateTime
+  description           String    @db.Text
+  user_id               String
+
+  user                  User            @relation(fields: [user_id], references: [id], onDelete: Cascade, name: "UserEventDailyReport")  // Relation to User
+  event                 Event             @relation(fields: [event_id], references: [id], onDelete: Cascade, name: "EventEventDailyReport")  // Relation to Event
+  event_activity        EventActivity?     @relation(fields: [event_activity_id], references: [id], onDelete: Cascade, name: "EventActivityEventDailyReport")  // Relation to EventActivity
 }

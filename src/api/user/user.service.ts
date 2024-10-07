@@ -106,5 +106,20 @@ export class UsersService {
     return null
   }
 
+  async updateStatus(id: string, status: number) {
+    const user = await this.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        status
+      },
+    });
+  }
+
 
 }
