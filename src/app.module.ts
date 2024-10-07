@@ -7,9 +7,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UsersService } from './api/user/user.service';
 import { ResponseInterceptor } from './core/interceptors';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ClientModule } from './api/client/client.module';
 
 @Module({
-  imports: [AuthModule, RoleModule, PrismaModule],
+  imports: [AuthModule, RoleModule, PrismaModule, ClientModule],
   controllers: [AppController],
   providers: [AppService, UsersService, {
     provide: APP_INTERCEPTOR,
