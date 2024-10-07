@@ -138,7 +138,7 @@ model EventActivity {
 model BankAccount {
   id                    String    @id @default(uuid())
   bank                  String
-  bank_number           BigInt
+  bank_number           String
   bank_account          String
 
   sender_finances       EventFinance[]  @relation("SenderBankEventFinance")  // Relation to EventFinance as sender bank
