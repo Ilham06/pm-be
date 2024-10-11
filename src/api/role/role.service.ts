@@ -25,6 +25,11 @@ export class RoleService {
                   mode: 'insensitive'
                },
             },
+            include: {
+               _count: {
+                  select: { permissions: true, users: true } // Menghitung total relasi permission
+               }
+            }
          }),
          this.prisma.role.count()
       ])
@@ -71,6 +76,7 @@ export class RoleService {
          const newRole = await prisma.role.create({
             data: {
                name: data.name,
+               code: data.code,
                description: data.description,
             },
          });
@@ -101,6 +107,7 @@ export class RoleService {
             where: { id },
             data: {
                name: data.name,
+               code: data.code,
                description: data.description,
             },
          });

@@ -67,10 +67,9 @@ export class BankService {
         throw new NotFoundException('Bank Account not found');
       }
   
-      this.prisma.bankAccount.delete({
+      return this.prisma.bankAccount.delete({
         where: { id },
       });
   
-      return null
   }
 }

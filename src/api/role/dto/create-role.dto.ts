@@ -5,6 +5,9 @@ export class CreateRoleDto {
     name: string;
 
     @IsNotEmpty()
+    code: string;
+
+    @IsNotEmpty()
     description: string;
 
     @IsNotEmpty()

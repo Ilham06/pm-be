@@ -11,7 +11,7 @@ export class AuthService {
   constructor(private usersService: UsersService,  private jwtService: JwtService) {}
 
   async signIn(data: LoginDto): Promise<any> {
-    let user = await this.usersService.findOne(data.email);
+    let user = await this.usersService.findByEmail(data.email);
     if (!user) {
       throw new NotFoundException('User Not Found');
     }

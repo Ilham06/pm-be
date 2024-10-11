@@ -33,4 +33,9 @@ export class UserController {
    delete(@Param('id') id: string) {
       return this.userService.delete(id);
    }
+
+   @Put(':id/update-status')
+   updateStatus(@Param('id') id: string, @Body() status: number) {
+      return this.userService.updateStatus(id, status);
+   }
 }

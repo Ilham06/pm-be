@@ -73,10 +73,8 @@ export class ClientService {
         throw new NotFoundException('Client not found');
       }
   
-      this.prisma.client.delete({
+      return this.prisma.client.delete({
         where: { id },
       });
-  
-      return null
     }
 }

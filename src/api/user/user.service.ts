@@ -26,13 +26,34 @@ export class UsersService {
     return user;
   }
 
+  async findByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: true
+              }
+            }
+          }
+        },
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async getAll(params: GetAllUserDto) {
     const { page, limit, keyword, status, role_id } = params
     const skip = (page - 1) * limit;
 
     const where: any = {
       name: keyword ? { contains: keyword, mode: 'insensitive' } : undefined,
-      status: status ? status : undefined,
+      status: status ? parseInt(status) : undefined,
       role_id: role_id ? role_id : undefined,
     };
 
@@ -63,6 +84,7 @@ export class UsersService {
     const params = {
       name: data.name,
       email: data.email,
+      phone: data.phone,
       password: await bcrypt.hash(data.phone, 10),
       role_id: data.role_id,
     };
@@ -82,6 +104,7 @@ export class UsersService {
     const updateData: any = {
       name: data.name || user.name,
       email: data.email || user.email,
+      phone: data.phone || user.phone,
       role_id: data.role_id || user.role_id,
     };
 
@@ -99,14 +122,12 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    this.prisma.user.delete({
+    return this.prisma.user.delete({
       where: { id },
     });
-
-    return null
   }
 
-  async updateStatus(id: string, status: number) {
+  async updateStatus(id: string, status: any) {
     const user = await this.findOne(id);
 
     if (!user) {
@@ -116,7 +137,7 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id },
       data: {
-        status
+        status: status.status
       },
     });
   }
