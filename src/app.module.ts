@@ -10,9 +10,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ClientModule } from './api/client/client.module';
 import { BankService } from './api/bank/bank.service';
 import { BankModule } from './api/bank/bank.module';
+import { EventModule } from './api/event/event.module';
 
 @Module({
-  imports: [AuthModule, RoleModule, PrismaModule, ClientModule, BankModule],
+  imports: [AuthModule, RoleModule, PrismaModule, ClientModule, BankModule, EventModule],
   controllers: [AppController],
   providers: [AppService, UsersService, {
     provide: APP_INTERCEPTOR,

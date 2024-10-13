@@ -120,8 +120,8 @@ model EventActivity {
   budget                Decimal   @db.Decimal(65, 2)
   plan_start_date       DateTime
   plan_end_date         DateTime
-  actual_start_date     DateTime
-  actual_end_date       DateTime
+  actual_start_date     DateTime?
+  actual_end_date       DateTime?
   status                Int       @default(0)
   user_id               String?
 
