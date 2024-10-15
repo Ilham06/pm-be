@@ -85,7 +85,7 @@ model Event {
   status        Int       @default(0)
   client_id     String
   description   String    @db.Text
-
+  note          String?
   client        Client     @relation(fields: [client_id], references: [id], onDelete: Cascade, name: "ClientEvent")  // Relation to Client
   documents     EventDocument[]   @relation("EventEventDocument")  // Relation to EventDocument
   activities    EventActivity[]   @relation("EventEventActivity")  // Relation to EventActivity

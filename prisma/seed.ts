@@ -4,119 +4,119 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const permissions = [
-  // Module User
+  // Module Event (CRUD)
   {
-    code: "USER__CREATE",
-    name: "Create User",
-    description: "Membuat user baru"
+    code: "EVENT__CREATE",
+    name: "Create Event",
+    description: "Membuat event baru"
   },
   {
-    code: "USER__GET_ALL",
-    name: "Get All Users",
-    description: "Mengambil semua data user"
+    code: "EVENT__GET_ALL",
+    name: "Get All Events",
+    description: "Mengambil semua data event"
   },
   {
-    code: "USER__DETAIL",
-    name: "User Detail",
-    description: "Melihat detail dari user"
+    code: "EVENT__DETAIL",
+    name: "Event Detail",
+    description: "Melihat detail dari event"
   },
   {
-    code: "USER__EDIT",
-    name: "Edit User",
-    description: "Mengedit informasi user"
+    code: "EVENT__EDIT",
+    name: "Edit Event",
+    description: "Mengedit informasi event"
   },
   {
-    code: "USER__DELETE",
-    name: "Delete User",
-    description: "Menghapus user"
+    code: "EVENT__DELETE",
+    name: "Delete Event",
+    description: "Menghapus event"
+  },
+  
+  // Additional Event Actions
+  {
+    code: "EVENT__UPDATE_STATUS",
+    name: "Update Event Status",
+    description: "Mengubah status event"
   },
   {
-    code: "USER__ACTION",
-    name: "Action User",
-    description: "Merubah status user"
-  },
-
-  // Module Client
-  {
-    code: "CLIENT__CREATE",
-    name: "Create Client",
-    description: "Membuat client baru"
+    code: "EVENT__ADD_ACTIVITY",
+    name: "Add Event Activity",
+    description: "Menambahkan aktivitas pada event"
   },
   {
-    code: "CLIENT__GET_ALL",
-    name: "Get All Clients",
-    description: "Mengambil semua data client"
-  },
-  {
-    code: "CLIENT__DETAIL",
-    name: "Client Detail",
-    description: "Melihat detail dari client"
-  },
-  {
-    code: "CLIENT__EDIT",
-    name: "Edit Client",
-    description: "Mengedit informasi client"
-  },
-  {
-    code: "CLIENT__DELETE",
-    name: "Delete Client",
-    description: "Menghapus client"
+    code: "EVENT__UPDATE_ACTIVITY",
+    name: "Update Event Activity",
+    description: "Mengubah aktivitas pada event"
   },
 
-  // Module Role
+  // Event Documents
   {
-    code: "ROLE__CREATE",
-    name: "Create Role",
-    description: "Membuat role baru"
+    code: "EVENT__ADD_DOCUMENT",
+    name: "Add Event Document",
+    description: "Menambahkan dokumen pada event"
   },
   {
-    code: "ROLE__GET_ALL",
-    name: "Get All Roles",
-    description: "Mengambil semua data role"
-  },
-  {
-    code: "ROLE__DETAIL",
-    name: "Role Detail",
-    description: "Melihat detail dari role"
-  },
-  {
-    code: "ROLE__EDIT",
-    name: "Edit Role",
-    description: "Mengedit informasi role"
-  },
-  {
-    code: "ROLE__DELETE",
-    name: "Delete Role",
-    description: "Menghapus role"
+    code: "EVENT__APPROVE_DOCUMENT",
+    name: "Approve Event Document",
+    description: "Menyetujui dokumen pada event"
   },
 
-  // Module Bank Account
+  // Event Budget
   {
-    code: "BANK_ACCOUNT__CREATE",
-    name: "Create Bank Account",
-    description: "Membuat rekening bank baru"
+    code: "EVENT__VIEW_BUDGET",
+    name: "View Event Budget",
+    description: "Melihat budget event"
+  },
+
+  // Event Transactions
+  {
+    code: "EVENT__ADD_TRANSACTION",
+    name: "Add Event Transaction",
+    description: "Menambahkan transaksi pada event"
   },
   {
-    code: "BANK_ACCOUNT__GET_ALL",
-    name: "Get All Bank Accounts",
-    description: "Mengambil semua data rekening bank"
+    code: "EVENT__APPROVE_TRANSACTION",
+    name: "Approve Event Transaction",
+    description: "Menyetujui transaksi pada event"
   },
   {
-    code: "BANK_ACCOUNT__DETAIL",
-    name: "Bank Account Detail",
-    description: "Melihat detail dari rekening bank"
+    code: "EVENT__DOWNLOAD_TRANSACTION_REPORT",
+    name: "Download Event Transaction Report",
+    description: "Mengunduh laporan transaksi event"
+  },
+
+  // Event Reports
+  {
+    code: "EVENT__CREATE_REPORT",
+    name: "Create Event Report",
+    description: "Membuat laporan event"
   },
   {
-    code: "BANK_ACCOUNT__EDIT",
-    name: "Edit Bank Account",
-    description: "Mengedit informasi rekening bank"
+    code: "EVENT__VIEW_REPORT",
+    name: "View Event Report",
+    description: "Melihat laporan event"
   },
   {
-    code: "BANK_ACCOUNT__DELETE",
-    name: "Delete Bank Account",
-    description: "Menghapus rekening bank"
+    code: "EVENT__VIEW_REPORT_DETAIL",
+    name: "View Event Report Detail",
+    description: "Melihat detail dari laporan event"
+  },
+  {
+    code: "EVENT__GENERATE_REPORT",
+    name: "Generate Event Report",
+    description: "Menghasilkan laporan event"
+  },
+  {
+    code: "EVENT__EDIT_REPORT",
+    name: "Edit Event Report",
+    description: "Mengedit laporan event"
+  },
+  {
+    code: "EVENT__DELETE_REPORT",
+    name: "Delete Event Report",
+    description: "Menghapus laporan event"
   }
 ];
+
 
 
 async function main() {
