@@ -105,7 +105,8 @@ model EventDocument {
   document_type         String
   path                  String
   user_id               String
-
+  status                Int       @default(0)
+  note                  String?
   event                 Event     @relation(fields: [event_id], references: [id], onDelete: Cascade, name: "EventEventDocument") // Relation to Event
   user                  User      @relation(fields: [user_id], references: [id], onDelete: Cascade, name: "UserEventDocument") // Relation to User
 

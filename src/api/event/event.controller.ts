@@ -11,13 +11,17 @@ import { GetUser } from 'src/core/decorators/get-user.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetAllEventDto } from './dto/get-all-event.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
+import { CreateEventActivityDto } from './dto/create-event-activity.dto';
+import { UpdateEventActivityDto } from './dto/update-event-activity.dto';
+import { UploadEventDocumentDto } from './dto/upload-event-document.dto';
+import { GetAllEvenDocumenttDto } from './dto/get-all-event-document.dto';
 
 @Controller('event')
+@UseGuards(AuthGuard)
 export class EventController {
   constructor(private readonly eventService: EventService) { }
 
   @Post()
-  @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file', {
     storage: storageConfig,  // Menggunakan helper storageConfig
     fileFilter,              // Menggunakan helper fileFilter
@@ -44,7 +48,6 @@ export class EventController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file', {
     storage: storageConfig,  // Menggunakan helper storageConfig
     fileFilter,              // Menggunakan helper fileFilter
@@ -72,5 +75,45 @@ export class EventController {
   @Put(':id/update-status')
   updateStatus(@Param('id') id: string, @Body() data: UpdateStatusDto) {
     return this.eventService.updateStatus({ id, status: data.status, note: data.note });
+  }
+
+  @Post(':id/activity')
+  createActivity(@Param('id') id: string, @Body() data: CreateEventActivityDto) {
+    return this.eventService.createActivity(id, data)
+  }
+
+  @Put(':id/activity')
+  updateActivity(@Param('id') id: string, @Body() data: UpdateEventActivityDto) {
+    return this.eventService.updateActivity(id, data)
+  }
+
+  @Post(':id/upload-document')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: storageConfig,
+    fileFilter,
+    limits
+  }))
+  uploadEventDocument(@Param('id') id: string, @Body() data: UploadEventDocumentDto, @UploadedFile() file: Express.Multer.File, @GetUser() user) {
+    return this.eventService.uploadEventDocument({
+      id,
+      file,
+      userId: user.sub,
+      type: data.type
+    })
+  }
+
+  @Get(':id/documents')
+  findDocument(@Param('id') id: string, @Query() data: GetAllEvenDocumenttDto) {
+    console.log(data)
+    return this.eventService.getEventDocument(id, data.type);
+  }
+
+  @Put(':id/document/update-status')
+  UpdateEventDocumentStatus(@Param('id') id: string, @Body() data: UpdateStatusDto) {
+    return this.eventService.updateEventDocumentStatus({
+      id,
+      status: data.status,
+      note: data.note
+    })
   }
 }

@@ -20,4 +20,11 @@ export interface CreateEventInterface {
    status: number;
    note?: string;
  }
+
+ export interface UploadEventDocumentInterface {
+  id: string;
+  file: Express.Multer.File;
+  type: string;
+  userId: string;
+}
  

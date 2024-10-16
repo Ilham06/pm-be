@@ -3,7 +3,9 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { readExcelFile } from 'src/helpers/excel.utils';
 import { GetAllEventDto } from './dto/get-all-event.dto';
-import { ChangeStatusInterface, CreateEventInterface, UpdateEventInterface } from './interfaces';
+import { ChangeStatusInterface, CreateEventInterface, UpdateEventInterface, UploadEventDocumentInterface } from './interfaces';
+import { CreateEventActivityDto } from './dto/create-event-activity.dto';
+import { UpdateEventActivityDto } from './dto/update-event-activity.dto';
 
 @Injectable()
 export class EventService {
@@ -207,6 +209,87 @@ export class EventService {
     }
 
     return this.prisma.event.update({
+      where: { id },
+      data: {
+        status,
+        note
+      },
+    });
+  }
+
+  async createActivity(event_id: string, data: CreateEventActivityDto) {
+    return await this.prisma.eventActivity.create({
+      data: {
+        event_id,
+        ...data
+      }
+    });
+  }
+
+  async updateActivity(id: string, data: UpdateEventActivityDto) {
+    const activityExists = await this.prisma.eventActivity.findUnique({ where: { id } });
+    if (!activityExists) {
+      throw new NotFoundException(`Activity not found`);
+    }
+
+    return await this.prisma.eventActivity.update({
+      where: { id },
+      data: {
+        ...data
+      }
+    });
+  }
+
+  async uploadEventDocument({ id, type, file, userId }: UploadEventDocumentInterface) {
+    // Mencari dokumen yang sesuai dengan event_id dan document_type
+    const existingDocument = await this.prisma.eventDocument.findFirst({
+      where: {
+        event_id: id,
+        document_type: type,
+      },
+    });
+
+  
+    if (existingDocument) {
+      // Jika dokumen ditemukan, lakukan update
+      return await this.prisma.eventDocument.update({
+        where: { id: existingDocument.id }, // Menggunakan id dokumen untuk update
+        data: {
+          path: file.path, // Mengupdate path
+        },
+      });
+    } else {
+      // Jika dokumen tidak ditemukan, buat dokumen baru
+      return await this.prisma.eventDocument.create({
+        data: {
+          event_id: id,
+          file_type: file.mimetype,
+          file_size: file.size.toString(),
+          file_name: file.filename,
+          document_type: type,
+          path: file.path,
+          user_id: userId,
+        },
+      });
+    }
+
+  }
+  
+
+  async getEventDocument(id: string, type: string) {
+    const documents = this.prisma.eventDocument.findMany({
+      where: {
+        event_id: id,
+        document_type: type
+      }
+    })
+
+    return documents
+  }
+
+  async updateEventDocumentStatus({ id, status, note }: ChangeStatusInterface) {
+
+    return this.prisma.eventDocument.update({
       where: { id },
       data: {
         status,
