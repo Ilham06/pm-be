@@ -6,6 +6,7 @@ import { GetAllEventDto } from './dto/get-all-event.dto';
 import { ChangeStatusInterface, CreateEventInterface, UpdateEventInterface, UploadEventDocumentInterface } from './interfaces';
 import { CreateEventActivityDto } from './dto/create-event-activity.dto';
 import { UpdateEventActivityDto } from './dto/update-event-activity.dto';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class EventService {
@@ -111,7 +112,11 @@ export class EventService {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
-        activities: true,
+        activities: {
+          orderBy: {
+            plan_start_date: 'asc', // Urutkan berdasarkan plan_start_date secara ascending
+          },
+        },
         documents: true,
         client: true,
       },
@@ -218,10 +223,16 @@ export class EventService {
   }
 
   async createActivity(event_id: string, data: CreateEventActivityDto) {
+    const updatedData = {
+      ...data,
+      plan_start_date: new Date(data.plan_start_date),
+      plan_end_date: new Date(data.plan_end_date)
+    };
+  
     return await this.prisma.eventActivity.create({
       data: {
         event_id,
-        ...data
+        ...updatedData
       }
     });
   }
@@ -231,11 +242,15 @@ export class EventService {
     if (!activityExists) {
       throw new NotFoundException(`Activity not found`);
     }
-
+    const updatedData = {
+      status: parseInt(data.status),
+      actual_start_date: new Date(data.actual_end_date),
+      actual_end_date: new Date(data.actual_end_date)
+    };
     return await this.prisma.eventActivity.update({
       where: { id },
       data: {
-        ...data
+        ...updatedData
       }
     });
   }
@@ -255,6 +270,9 @@ export class EventService {
       return await this.prisma.eventDocument.update({
         where: { id: existingDocument.id }, // Menggunakan id dokumen untuk update
         data: {
+          file_type: file.mimetype,
+          file_size: file.size.toString(),
+          file_name: file.filename,
           path: file.path, // Mengupdate path
         },
       });

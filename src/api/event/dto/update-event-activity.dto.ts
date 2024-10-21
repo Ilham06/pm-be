@@ -8,6 +8,6 @@ export class UpdateEventActivityDto {
    actual_end_date: any;
 
    @IsOptional()
-   status: number;
+   status: string;
    
 }
