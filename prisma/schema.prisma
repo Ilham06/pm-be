@@ -161,7 +161,7 @@ model EventFinance {
   destination_bank_id   String
   sender_bank_id        String?
   payment_due_date      DateTime
-  transaction_date      DateTime
+  transaction_date      DateTime?
   note                  String?
   status                String
   user_id               String

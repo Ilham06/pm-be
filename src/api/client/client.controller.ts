@@ -5,7 +5,7 @@ import { GetAllClientDto } from './dto/get-all-client-dto';
 import { CreateClientDto } from './dto/create-client-dto';
 
 @Controller('client')
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class ClientController {
    constructor(private readonly clientService: ClientService) { }
 

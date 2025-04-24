@@ -11,9 +11,10 @@ import { ClientModule } from './api/client/client.module';
 import { BankService } from './api/bank/bank.service';
 import { BankModule } from './api/bank/bank.module';
 import { EventModule } from './api/event/event.module';
+import { FinanceModule } from './api/finance/finance.module';
 
 @Module({
-  imports: [AuthModule, RoleModule, PrismaModule, ClientModule, BankModule, EventModule],
+  imports: [AuthModule, RoleModule, PrismaModule, ClientModule, BankModule, EventModule, FinanceModule],
   controllers: [AppController],
   providers: [AppService, UsersService, {
     provide: APP_INTERCEPTOR,
