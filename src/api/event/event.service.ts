@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { readExcelFile } from 'src/helpers/excel.utils';
 import { GetAllEventDto } from './dto/get-all-event.dto';
 import { ChangeStatusInterface, CreateEventInterface, UpdateEventInterface, UploadEventDocumentInterface } from './interfaces';
 import { CreateEventActivityDto } from './dto/create-event-activity.dto';
 import { UpdateEventActivityDto } from './dto/update-event-activity.dto';
 import dayjs from 'dayjs';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class EventService {

@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './api/auth/auth.module';
 import { RoleModule } from './api/role/role.module';
-import { PrismaModule } from './prisma/prisma.module';
 import { UsersService } from './api/user/user.service';
 import { ResponseInterceptor } from './core/interceptors';
 import { APP_INTERCEPTOR } from '@nestjs/core';
@@ -12,6 +11,7 @@ import { BankService } from './api/bank/bank.service';
 import { BankModule } from './api/bank/bank.module';
 import { EventModule } from './api/event/event.module';
 import { FinanceModule } from './api/finance/finance.module';
+import { PrismaModule } from './api/prisma/prisma.module';
 
 @Module({
   imports: [AuthModule, RoleModule, PrismaModule, ClientModule, BankModule, EventModule, FinanceModule],

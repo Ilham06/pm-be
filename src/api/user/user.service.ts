@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid'
 import { GetAllUserDto } from './dto/get-all-user.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 // This should be a real class/interface representing a user entity
 export type User = any;

@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFinanceDto } from './dto/create-finance.dto';
 import { UpdateFinanceDto } from './dto/update-finance.dto';
 import { ChangeStatusInterface, CreateTransactionInterface, UpdateTransactionInterface } from './interfaces';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { GetAllTransactionDto } from './dto/get-all-transaction.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class FinanceService {

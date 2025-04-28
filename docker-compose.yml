@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pm-be
+    ports:
+      - "3001:3001" # ganti sesuai port yang kamu pakai di NestJS
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL} # penting buat Prisma
+    restart: unless-stopped
