@@ -1,9 +1,7 @@
 version: '3.8'
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ilhammuhamad/pm-be:latest 
     container_name: pm-be
     ports:
       - "3001:3001" # ganti sesuai port yang kamu pakai di NestJS
