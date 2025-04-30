@@ -13,13 +13,14 @@ pipeline {
             steps {
                 script {
                     env.IMAGE_TAG = "build-${env.BUILD_NUMBER}"
+                    echo "Image Tag: ${env.IMAGE_TAG}"
                 }
             }
         }
 
         stage('Build') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
             }
         }
 
@@ -37,18 +38,20 @@ pipeline {
         stage('Deploy') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
-                    sh '''
-                        mkdir -p ~/.ssh
-                        cp $SSH_KEY ~/.ssh/id_rsa
-                        chmod 600 ~/.ssh/id_rsa
+                    script {
+                        sh '''
+                            mkdir -p ~/.ssh
+                            cp $SSH_KEY ~/.ssh/id_rsa
+                            chmod 600 ~/.ssh/id_rsa
 
-                        ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
-                            cd /root/projects/project-management/pm-be
-                            docker pull ${IMAGE_NAME}:${IMAGE_TAG}
-                            docker-compose down || true
-                            docker-compose up -d
+                            ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
+                                cd /root/projects/project-management/pm-be
+                                docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+                                docker-compose down || true
+                                IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
 EOF
-                    '''
+                        '''
+                    }
                 }
             }
         }
