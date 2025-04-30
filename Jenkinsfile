@@ -3,16 +3,17 @@ pipeline {
 
     environment {
         IMAGE_NAME = "ilhammuhamad/pm-be"
-        IMAGE_TAG = "build-${env.BUILD_NUMBER}"
         VPS_HOST = "168.231.118.205"
-        VPS_USER = "root" // Misalnya root atau user di VPS
-        SSH_CREDENTIALS_ID = "vps-key" // Credentials ID dari SSH Key di Jenkins
+        VPS_USER = "root"
+        SSH_CREDENTIALS_ID = "vps-key"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Set Tag') {
             steps {
-                checkout scm  // Clone repo dari SCM (GitHub)
+                script {
+                    env.IMAGE_TAG = "build-${env.BUILD_NUMBER}"
+                }
             }
         }
 
@@ -37,13 +38,11 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
                     sh '''
-                        # Copy SSH private key ke lokasi sementara
                         mkdir -p ~/.ssh
                         cp $SSH_KEY ~/.ssh/id_rsa
                         chmod 600 ~/.ssh/id_rsa
 
-                        # SSH ke VPS dan jalankan perintah deploy
-                        ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << 'EOF'
+                        ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
                             cd /root/projects/project-management/pm-be
                             docker pull ${IMAGE_NAME}:${IMAGE_TAG}
                             docker-compose down || true
