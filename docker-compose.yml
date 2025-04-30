@@ -1,12 +1,12 @@
 version: '3.8'
 services:
   backend:
-    image: ilhammuhamad/pm-be:latest 
+    image: ilhammuhamad/pm-be:build-${BUILD_NUMBER}
     container_name: pm-be
     ports:
-      - "3001:3001" # ganti sesuai port yang kamu pakai di NestJS
+      - "3001:3001"
     env_file:
       - .env
     environment:
-      - DATABASE_URL=${DATABASE_URL} # penting buat Prisma
+      - DATABASE_URL=${DATABASE_URL}
     restart: unless-stopped

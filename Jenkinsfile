@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "ilhammuhamad/pm-be"
-        IMAGE_TAG = "latest"
+        IMAGE_TAG = "build-${env.BUILD_NUMBER}"
         VPS_HOST = "168.231.118.205"
         VPS_USER = "root" // Misalnya root atau user di VPS
         SSH_CREDENTIALS_ID = "vps-key" // Credentials ID dari SSH Key di Jenkins
