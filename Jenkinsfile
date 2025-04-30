@@ -1,72 +1,22 @@
-// pipeline {
-//     agent any
-
-//     environment {
-//         IMAGE_NAME = "ilhammuhamad/pm-be"
-//         VPS_HOST = "168.231.118.205"
-//         VPS_USER = "root"
-//         SSH_CREDENTIALS_ID = "vps-key"
-//     }
-
-//     stages {
-//         stage('Set Tag') {
-//             steps {
-//                 script {
-//                     env.IMAGE_TAG = "build-${env.BUILD_NUMBER}"
-//                     echo "Image Tag: ${env.IMAGE_TAG}"
-//                 }
-//             }
-//         }
-
-//         stage('Build') {
-//             steps {
-//                 sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
-//             }
-//         }
-
-//         stage('Push') {
-//             steps {
-//                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-//                     sh '''
-//                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-//                         docker push ${IMAGE_NAME}:${IMAGE_TAG}
-//                     '''
-//                 }
-//             }
-//         }
-
-//         stage('Deploy') {
-//             steps {
-//                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
-//                     script {
-//                         sh '''
-//                             mkdir -p ~/.ssh
-//                             cp $SSH_KEY ~/.ssh/id_rsa
-//                             chmod 600 ~/.ssh/id_rsa
-
-//                             ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
-//                                 cd /root/projects/project-management/pm-be
-//                                 docker pull ${IMAGE_NAME}:${IMAGE_TAG}
-//                                 docker-compose down || true
-//                                 IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
-// EOF
-//                         '''
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
 pipeline {
     agent any
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Check Branch') {
             steps {
                 script {
-                    // Cek nama branch yang sedang digunakan
-                    echo "Current Branch: ${env.BRANCH_NAME}"
+                    // Menggunakan git untuk mendapatkan nama branch
+                    def branch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    echo "Current Branch: ${branch}"
+
+                    // Menyimpan nama branch ke dalam env.BRANCH_NAME jika perlu
+                    env.BRANCH_NAME = branch
                 }
             }
         }
@@ -74,7 +24,7 @@ pipeline {
         stage('Build') {
             when {
                 expression {
-                    // Pastikan hanya dijalankan pada branch tertentu (misalnya, development atau production)
+                    // Memeriksa nama branch yang sudah di-set
                     return env.BRANCH_NAME == 'development' || env.BRANCH_NAME == 'production'
                 }
             }
