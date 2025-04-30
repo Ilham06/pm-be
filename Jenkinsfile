@@ -65,8 +65,9 @@ pipeline {
         stage('Check Branch') {
             steps {
                 script {
-                    // Cek nama branch yang sedang digunakan
-                    echo "Current Branch: ${env.BRANCH_NAME}"
+                    // Ambil nama branch menggunakan perintah git
+                    def branchName = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                    echo "Branch name: ${branchName}"
                 }
             }
         }
