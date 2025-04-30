@@ -66,7 +66,7 @@ pipeline {
             steps {
                 script {
                     // Cek nama branch yang sedang digunakan
-                    echo branch
+                    echo "Current Branch: ${env.BRANCH_NAME}"
                 }
             }
         }
