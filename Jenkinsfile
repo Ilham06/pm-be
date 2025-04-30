@@ -66,23 +66,8 @@ pipeline {
             steps {
                 script {
                     // Cek nama branch yang sedang digunakan, jika BRANCH_NAME tidak ada, fallback ke GIT_BRANCH
-                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                    echo "Current Branch: ${branchName}"
+                    echo "Branch: ${env.GIT_BRANCH}"
                 }
-            }
-        }
-
-        stage('Build') {
-            when {
-                expression {
-                    // Pastikan hanya dijalankan pada branch tertentu (misalnya, development atau production)
-                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                    return branchName == 'development' || branchName == 'production'
-                }
-            }
-            steps {
-                echo "Building on branch: ${env.BRANCH_NAME ?: env.GIT_BRANCH}"
-                // Tambahkan langkah build di sini
             }
         }
     }
