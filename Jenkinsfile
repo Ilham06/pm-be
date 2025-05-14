@@ -51,10 +51,12 @@ pipeline {
             when {
                 expression { 
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                    echo branchName
                     return branchName == 'origin/development'
                 }
             }
             steps {
+                echo "proses deploy"
                 deployApp('3001', '.env.dev')
             }
         }
@@ -63,10 +65,12 @@ pipeline {
             when {
                 expression {
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                    echo branchName
                     return branchName == 'origin/main'
                 }
             }
             steps {
+                echo "proses deploy"
                 deployApp('5001', '.env.prod')
             }
         }
