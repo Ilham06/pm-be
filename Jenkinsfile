@@ -22,9 +22,9 @@ pipeline {
             steps {
                 script {
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                    def port = branchName == 'development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
-                    def version = branchName == 'development' ? 'dev' : 'prod'  // Menentukan versi berdasarkan branch
-                    def envFile = branchName == 'development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
+                    def port = branchName == 'origin/development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
+                    def version = branchName == 'origin/development' ? 'dev' : 'prod'  // Menentukan versi berdasarkan branch
+                    def envFile = branchName == 'origin/development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
                     
                     echo "Building for ${branchName} with version ${version} on port ${port} using env file ${envFile}"
 
