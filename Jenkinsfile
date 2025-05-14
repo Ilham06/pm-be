@@ -20,7 +20,21 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
+                script {
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                    def port = branchName == 'development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
+                    def version = branchName == 'development' ? 'dev' : 'prod'  // Menentukan versi berdasarkan branch
+                    def envFile = branchName == 'development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
+                    
+                    echo "Building for ${branchName} with version ${version} on port ${port} using env file ${envFile}"
+
+                    // Set environment variables
+                    env.PORT = port
+                    env.ENV_FILE = envFile
+
+                    // Build Docker image dengan tag yang sudah disesuaikan
+                    sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} --build-arg VERSION=${version} --build-arg PORT=${port} ."
+                }
             }
         }
 
@@ -39,6 +53,16 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
                     script {
+                        def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                        def port = branchName == 'development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
+                        def envFile = branchName == 'development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
+
+                        echo "Deploying ${branchName} on port ${port} using env file ${envFile}"
+
+                        // Set PORT dan ENV_FILE untuk digunakan di Docker Compose
+                        env.PORT = port
+                        env.ENV_FILE = envFile
+
                         sh '''
                             mkdir -p ~/.ssh
                             cp $SSH_KEY ~/.ssh/id_rsa
@@ -48,7 +72,7 @@ pipeline {
                                 cd /root/projects/project-management/pm-be
                                 docker pull ${IMAGE_NAME}:${IMAGE_TAG}
                                 docker-compose down || true
-                                IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
+                                IMAGE_TAG=${IMAGE_TAG} PORT=${port} ENV_FILE=${envFile} docker-compose up -d
 EOF
                         '''
                     }
