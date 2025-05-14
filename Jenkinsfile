@@ -68,15 +68,18 @@ pipeline {
                             cp $SSH_KEY ~/.ssh/id_rsa
                             chmod 600 ~/.ssh/id_rsa
 
-                            ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
+                           ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
     cd /root/projects/project-management/pm-be
-    docker pull ${IMAGE_NAME}:${IMAGE_TAG}
-    export IMAGE_TAG=${IMAGE_TAG}
-    export PORT=${port}
-    export ENV_FILE=${envFile}
-    docker-compose down || true
-    docker-compose up -d
+
+    echo "IMAGE_TAG=${IMAGE_TAG}" > .env.compose
+    echo "PORT=${port}" >> .env.compose
+    echo "ENV_FILE=${envFile}" >> .env.compose
+
+    docker pull ilhammuhamad/pm-be:build-${IMAGE_TAG}
+    docker-compose --env-file .env.compose down || true
+    docker-compose --env-file .env.compose up -d
 EOF
+
                         '''
                     }
                 }
