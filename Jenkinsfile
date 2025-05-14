@@ -56,7 +56,7 @@ pipeline {
                         def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
                         def port = branchName == 'origin/development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
                         def envFile = branchName == 'origin/development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
-                
+
                         echo "Deploying ${branchName} on port ${port} using env file ${envFile}"
 
                         // Set PORT dan ENV_FILE untuk digunakan di Docker Compose
@@ -68,18 +68,17 @@ pipeline {
                             cp $SSH_KEY ~/.ssh/id_rsa
                             chmod 600 ~/.ssh/id_rsa
 
-                           ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
-    cd /root/projects/project-management/pm-be
+                            ssh -o StrictHostKeyChecking=no \$VPS_USER@\$VPS_HOST << EOF
+                                cd /root/projects/project-management/pm-be
 
-    echo "IMAGE_TAG=${IMAGE_TAG}" > .env.compose
-    echo "PORT=${port}" >> .env.compose
-    echo "ENV_FILE=${envFile}" >> .env.compose
+                                echo "IMAGE_TAG=${IMAGE_TAG}" > .env.compose
+                                echo "PORT=${port}" >> .env.compose
+                                echo "ENV_FILE=${envFile}" >> .env.compose
 
-    docker pull ilhammuhamad/pm-be:build-${IMAGE_TAG}
-    docker-compose --env-file .env.compose down || true
-    docker-compose --env-file .env.compose up -d
-EOF
-
+                                docker pull ilhammuhamad/pm-be:${IMAGE_TAG}
+                                docker-compose --env-file .env.compose down || true
+                                docker-compose --env-file .env.compose up -d
+                            EOF
                         '''
                     }
                 }
