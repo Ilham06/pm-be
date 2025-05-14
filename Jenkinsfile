@@ -22,17 +22,15 @@ pipeline {
             steps {
                 script {
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                    def port = branchName == 'origin/development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
-                    def version = branchName == 'origin/development' ? 'dev' : 'prod'  // Menentukan versi berdasarkan branch
-                    def envFile = branchName == 'origin/development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
-                    
+                    def port = branchName == 'origin/development' ? '3001' : '5001'
+                    def version = branchName == 'origin/development' ? 'dev' : 'prod'
+                    def envFile = branchName == 'origin/development' ? '.env.dev' : '.env.prod'
+
                     echo "Building for ${branchName} with version ${version} on port ${port} using env file ${envFile}"
 
-                    // Set environment variables
                     env.PORT = port
                     env.ENV_FILE = envFile
 
-                    // Build Docker image dengan tag yang sudah disesuaikan
                     sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} --build-arg VERSION=${version} --build-arg PORT=${port} ."
                 }
             }
@@ -49,41 +47,56 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
-                    script {
-                        def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                        def port = branchName == 'origin/development' ? '3001' : '5001'  // Menentukan port berdasarkan branch
-                        def envFile = branchName == 'origin/development' ? '.env.dev' : '.env.prod'  // Menentukan file .env sesuai branch
-
-                        echo "Deploying ${branchName} on port ${port} using env file ${envFile}"
-
-                        // Set PORT dan ENV_FILE untuk digunakan di Docker Compose
-                        env.PORT = port
-                        env.ENV_FILE = envFile
-
-                        sh '''
-                            mkdir -p ~/.ssh
-                            cp $SSH_KEY ~/.ssh/id_rsa
-                            chmod 600 ~/.ssh/id_rsa
-
-                            ssh -o StrictHostKeyChecking=no \$VPS_USER@\$VPS_HOST << EOF
-                                cd /root/projects/project-management/pm-be
-
-                                echo "IMAGE_TAG=${IMAGE_TAG}" > .env.compose
-                                echo "PORT=${port}" >> .env.compose
-                                echo "ENV_FILE=${envFile}" >> .env.compose
-
-                                docker pull ilhammuhamad/pm-be:${IMAGE_TAG}
-                                docker-compose --env-file .env.compose down || true
-                                docker-compose --env-file .env.compose up -d
-                            EOF
-                        '''
-                    }
+        stage('Deploy Dev') {
+            when {
+                expression { 
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                    return branchName == 'origin/development'
                 }
+            }
+            steps {
+                deployApp('3001', '.env.dev')
+            }
+        }
+
+        stage('Deploy Prod') {
+            when {
+                expression {
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                    return branchName == 'origin/main'
+                }
+            }
+            steps {
+                deployApp('5001', '.env.prod')
             }
         }
     }
 }
 
+def deployApp(port, envFile) {
+    return {
+        withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
+            script {
+                echo "Deploying on port ${port} using env file ${envFile}"
+
+                sh """
+                    mkdir -p ~/.ssh
+                    cp \$SSH_KEY ~/.ssh/id_rsa
+                    chmod 600 ~/.ssh/id_rsa
+
+                    ssh -o StrictHostKeyChecking=no ${env.VPS_USER}@${env.VPS_HOST} << EOF
+                        cd /root/projects/project-management/pm-be
+
+                        echo "IMAGE_TAG=${env.IMAGE_TAG}" > .env.compose
+                        echo "PORT=${port}" >> .env.compose
+                        echo "ENV_FILE=${envFile}" >> .env.compose
+
+                        docker pull ${env.IMAGE_NAME}:${env.IMAGE_TAG}
+                        docker-compose --env-file .env.compose down || true
+                        docker-compose --env-file .env.compose up -d
+                    EOF
+                """
+            }
+        }
+    }
+}
