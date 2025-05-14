@@ -46,39 +46,57 @@ pipeline {
             }
         }
 
-        stage('Deploy to VPS') {
-    steps {
-        withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
-            script {
-                def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                def deployEnv = branchName == 'origin/development' ? 'dev' : 'prod'
+        // stage('Deploy to VPS') {
+        //     steps {
+        //         withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
+        //             script {
+        //                 def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+        //                 def deployEnv = branchName == 'origin/development' ? 'dev' : 'prod'
 
-                // Deploy to VPS with a single docker-compose.yml
-                echo "Deploying to ${deployEnv} environment"
+        //                 // Deploy to VPS with a single docker-compose.yml
+        //                 echo "Deploying to ${deployEnv} environment"
 
-                sh '''
-                    # Use bash instead of sh to support advanced shell features
-                    mkdir -p ~/.ssh
-                    cp $SSH_KEY ~/.ssh/id_rsa
-                    chmod 600 ~/.ssh/id_rsa
+        //                 sh '''
+        //                     mkdir -p ~/.ssh
+        //                     cp $SSH_KEY ~/.ssh/id_rsa
+        //                     chmod 600 ~/.ssh/id_rsa
 
-                    # Ensure bash is used for script execution
-                    bash -c "ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
-                        cd /root/projects/project-management/pm-be
-                        docker pull ${IMAGE_NAME}:${IMAGE_TAG}
-                        
-                        # Set environment variables for the specific environment (dev or prod)
-                        export NODE_ENV=${deployEnv}
-                        export PORT=${deployEnv == 'dev' ? '3001' : '5001'}
-                        
-                        docker-compose down || true
-                        IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
-                    EOF"
-                '''
+        //                     ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
+        //                         cd /root/projects/project-management/pm-be
+        //                         docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+                                
+        //                         # Set environment variables for the specific environment (dev or prod)
+        //                         export NODE_ENV=${deployEnv}
+        //                         export PORT=${deployEnv == 'dev' ? '3001' : '5001'}
+                                
+        //                         docker-compose down || true
+        //                         IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
+        //                     EOF
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage('Deploy') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
+                    script {
+                        sh '''
+                            mkdir -p ~/.ssh
+                            cp $SSH_KEY ~/.ssh/id_rsa
+                            chmod 600 ~/.ssh/id_rsa
+
+                            ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
+                                cd /root/projects/project-management/pm-be
+                                docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+                                docker-compose down || true
+                                IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
+EOF
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
     }
 }
