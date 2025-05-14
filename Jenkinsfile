@@ -82,25 +82,37 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
                     script {
-                        sh '''
-                            mkdir -p ~/.ssh
-                            cp $SSH_KEY ~/.ssh/id_rsa
-                            chmod 600 ~/.ssh/id_rsa
 
-                            ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
-                                cd /root/projects/project-management/pm-be
+                        def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                        def deployEnv = branchName == 'origin/development' ? 'dev' : 'prod'
 
-                                 # Set environment variables
-                                export IMAGE_NAME=${IMAGE_NAME}
-                                export IMAGE_TAG=${IMAGE_TAG}
-                                export NODE_ENV=${deployEnv}
-                                export PORT=\${deployEnv == "dev" ? "3001" : "5001"}
+                        // Deploy to VPS with a single docker-compose.yml
+                        echo "Deploying to ${deployEnv} environment"
 
-                                docker pull ${IMAGE_NAME}:${IMAGE_TAG}
-                                docker-compose down || true
-                                IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
-EOF
-                        '''
+                        sh """
+    mkdir -p ~/.ssh
+    cp \$SSH_KEY ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+
+    # Gunakan bash untuk menjalankan ekspansi variabel yang lebih kompleks
+    bash -c '
+        export IMAGE_NAME=${IMAGE_NAME}
+        export IMAGE_TAG=${IMAGE_TAG}
+        export NODE_ENV=${deployEnv}
+        export PORT=$(if [ "$deployEnv" == "dev" ]; then echo "3001"; else echo "5001"; fi)
+
+        # Deploy ke server remote
+        cd /root/projects/project-management/pm-be
+
+        # Pull image terbaru
+        docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+
+        # Matikan container lama dan jalankan yang baru
+        docker-compose down || true
+        IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
+    '
+"""
+
                     }
                 }
             }
