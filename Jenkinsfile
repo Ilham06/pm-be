@@ -89,6 +89,13 @@ pipeline {
 
                             ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
                                 cd /root/projects/project-management/pm-be
+
+                                 # Set environment variables
+                                export IMAGE_NAME=${IMAGE_NAME}
+                                export IMAGE_TAG=${IMAGE_TAG}
+                                export NODE_ENV=${deployEnv}
+                                export PORT=\${deployEnv == "dev" ? "3001" : "5001"}
+
                                 docker pull ${IMAGE_NAME}:${IMAGE_TAG}
                                 docker-compose down || true
                                 IMAGE_TAG=${IMAGE_TAG} docker-compose up -d
